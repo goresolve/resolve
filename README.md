@@ -2,7 +2,12 @@
 
 ⚡️ A full-featured framework based on the http server presented in the standard Golang library.
 
-## Features
+### Installation
+```bash
+go get github.com/goresolve/resolve
+```
+
+### Features
 - [X] Parametric Routing
 - [X] Middlewares
 - [X] HTML Rendering
