@@ -3,6 +3,8 @@
 ⚡️ A full-featured framework based on the http server presented in the standard Golang library.
 
 ### Installation
+
+Use our [CLI wizard](https://github.com/goresolve/cli) or add to an existing project:
 ```bash
 go get github.com/goresolve/resolve
 ```
