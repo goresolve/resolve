@@ -1,0 +1,203 @@
+package resolve
+
+type Handler func(c *Ctx)
+type Middleware func(c *Ctx, next Handler)
+
+type Map map[string]interface{}
+
+type Status int
+
+var (
+	StatusSwitchingProtocols Status = 101
+	StatusProcessing         Status = 102
+	StatusEarlyHints         Status = 103
+
+	StatusOK                   Status = 200
+	StatusCreated              Status = 201
+	StatusAccepted             Status = 202
+	StatusNonAuthoritativeInfo Status = 203
+	StatusNoContent            Status = 204
+	StatusResetContent         Status = 205
+	StatusPartialContent       Status = 206
+	StatusMultiStatus          Status = 207
+	StatusAlreadyReported      Status = 208
+
+	StatusMultipleChoices   Status = 300
+	StatusMovedPermanently  Status = 301
+	StatusFound             Status = 302
+	StatusSeeOther          Status = 303
+	StatusNotModified       Status = 304
+	StatusUseProxy          Status = 305
+	StatusTemporaryRedirect Status = 307
+	StatusPermanentRedirect Status = 308
+
+	StatusBadRequest                  Status = 400
+	StatusUnauthorized                Status = 401
+	StatusPaymentRequired             Status = 402
+	StatusForbidden                   Status = 403
+	StatusNotFound                    Status = 404
+	StatusMethodNotAllowed            Status = 405
+	StatusNotAcceptable               Status = 406
+	StatusProxyAuthRequired           Status = 407
+	StatusRequestTimeout              Status = 408
+	StatusConflict                    Status = 409
+	StatusGone                        Status = 410
+	StatusLengthRequired              Status = 411
+	StatusPreconditionFailed          Status = 412
+	StatusPayloadTooLarge             Status = 413
+	StatusURITooLong                  Status = 414
+	StatusUnsupportedMediaType        Status = 415
+	StatusRangeNotSatisfiable         Status = 416
+	StatusExpectationFailed           Status = 417
+	StatusImATeapot                   Status = 418
+	StatusMisdirectedRequest          Status = 421
+	StatusUnprocessableEntity         Status = 422
+	StatusLocked                      Status = 423
+	StatusFailedDependency            Status = 424
+	StatusTooEarly                    Status = 425
+	StatusUpsgradeRequired            Status = 426
+	StatusPreconditionRequired        Status = 428
+	StatusTooManyRequests             Status = 429
+	StatusRequestHeaderFieldsTooLarge Status = 431
+	StatusUnavailableForLegalReasons  Status = 451
+
+	StatusInternalServerError           Status = 500
+	StatusNotImplemented                Status = 501
+	StatusBadGateway                    Status = 502
+	StatusServiceUnavailable            Status = 503
+	StatusGatewayTimeout                Status = 504
+	StatusHTTPVersionNotSupported       Status = 505
+	StatusVariantAlsoNegotiates         Status = 506
+	StatusInsufficientStorage           Status = 507
+	StatusLoopDetected                  Status = 508
+	StatusNotExtended                   Status = 510
+	StatusNetworkAuthenticationRequired Status = 511
+)
+
+type Header string
+
+var (
+	HeaderAuthorization                   Header = "Authorization"
+	HeaderProxyAuthenticate               Header = "Proxy-Authenticate"
+	HeaderProxyAuthorization              Header = "Proxy-Authorization"
+	HeaderWWWAuthenticate                 Header = "WWW-Authenticate"
+	HeaderAge                             Header = "Age"
+	HeaderCacheControl                    Header = "Cache-Control"
+	HeaderClearSiteData                   Header = "Clear-Site-Data"
+	HeaderExpires                         Header = "Expires"
+	HeaderPragma                          Header = "Pragma"
+	HeaderWarning                         Header = "Warning"
+	HeaderAcceptCH                        Header = "Accept-CH"
+	HeaderAcceptCHLifetime                Header = "Accept-CH-Lifetime"
+	HeaderContentDPR                      Header = "Content-DPR"
+	HeaderDPR                             Header = "DPR"
+	HeaderEarlyData                       Header = "Early-Data"
+	HeaderSaveData                        Header = "Save-Data"
+	HeaderViewportWidth                   Header = "Viewport-Width"
+	HeaderWidth                           Header = "Width"
+	HeaderETag                            Header = "ETag"
+	HeaderIfMatch                         Header = "If-Match"
+	HeaderIfModifiedSince                 Header = "If-Modified-Since"
+	HeaderIfNoneMatch                     Header = "If-None-Match"
+	HeaderIfUnmodifiedSince               Header = "If-Unmodified-Since"
+	HeaderLastModified                    Header = "Last-Modified"
+	HeaderVary                            Header = "Vary"
+	HeaderConnection                      Header = "Connection"
+	HeaderKeepAlive                       Header = "Keep-Alive"
+	HeaderAccept                          Header = "Accept"
+	HeaderAcceptCharset                   Header = "Accept-Charset"
+	HeaderAcceptEncoding                  Header = "Accept-Encoding"
+	HeaderAcceptLanguage                  Header = "Accept-Language"
+	HeaderCookie                          Header = "Cookie"
+	HeaderExpect                          Header = "Expect"
+	HeaderMaxForwards                     Header = "Max-Forwards"
+	HeaderSetCookie                       Header = "Set-Cookie"
+	HeaderAccessControlAllowCredentials   Header = "Access-Control-Allow-Credentials"
+	HeaderAccessControlAllowHeaders       Header = "Access-Control-Allow-Headers"
+	HeaderAccessControlAllowMethods       Header = "Access-Control-Allow-Methods"
+	HeaderAccessControlAllowOrigin        Header = "Access-Control-Allow-Origin"
+	HeaderAccessControlExposeHeaders      Header = "Access-Control-Expose-Headers"
+	HeaderAccessControlMaxAge             Header = "Access-Control-Max-Age"
+	HeaderAccessControlRequestHeaders     Header = "Access-Control-Request-Headers"
+	HeaderAccessControlRequestMethod      Header = "Access-Control-Request-Method"
+	HeaderOrigin                          Header = "Origin"
+	HeaderTimingAllowOrigin               Header = "Timing-Allow-Origin"
+	HeaderXPermittedCrossDomainPolicies   Header = "X-Permitted-Cross-Domain-Policies"
+	HeaderDNT                             Header = "DNT"
+	HeaderTk                              Header = "Tk"
+	HeaderContentDisposition              Header = "Content-Disposition"
+	HeaderContentEncoding                 Header = "Content-Encoding"
+	HeaderContentLanguage                 Header = "Content-Language"
+	HeaderContentLength                   Header = "Content-Length"
+	HeaderContentLocation                 Header = "Content-Location"
+	HeaderContentType                     Header = "Content-Type"
+	HeaderForwarded                       Header = "Forwarded"
+	HeaderVia                             Header = "Via"
+	HeaderXForwardedFor                   Header = "X-Forwarded-For"
+	HeaderXForwardedHost                  Header = "X-Forwarded-Host"
+	HeaderXForwardedProto                 Header = "X-Forwarded-Proto"
+	HeaderXForwardedProtocol              Header = "X-Forwarded-Protocol"
+	HeaderXForwardedSsl                   Header = "X-Forwarded-Ssl"
+	HeaderXUrlScheme                      Header = "X-Url-Scheme"
+	HeaderLocation                        Header = "Location"
+	HeaderFrom                            Header = "From"
+	HeaderHost                            Header = "Host"
+	HeaderReferer                         Header = "Referer"
+	HeaderReferrerPolicy                  Header = "Referrer-Policy"
+	HeaderUserAgent                       Header = "User-Agent"
+	HeaderAllow                           Header = "Allow"
+	HeaderServer                          Header = "Server"
+	HeaderAcceptRanges                    Header = "Accept-Ranges"
+	HeaderContentRange                    Header = "Content-Range"
+	HeaderIfRange                         Header = "If-Range"
+	HeaderRange                           Header = "Range"
+	HeaderContentSecurityPolicy           Header = "Content-Security-Policy"
+	HeaderContentSecurityPolicyReportOnly Header = "Content-Security-Policy-Report-Only"
+	HeaderCrossOriginResourcePolicy       Header = "Cross-Origin-Resource-Policy"
+	HeaderExpectCT                        Header = "Expect-CT"
+	HeaderFeaturePolicy                   Header = "Feature-Policy"
+	HeaderPermissionsPolicy               Header = "Permissions-Policy"
+	HeaderPublicKeyPins                   Header = "Public-Key-Pins"
+	HeaderPublicKeyPinsReportOnly         Header = "Public-Key-Pins-Report-Only"
+	HeaderStrictTransportSecurity         Header = "Strict-Transport-Security"
+	HeaderUpgradeInsecureRequests         Header = "Upgrade-Insecure-Requests"
+	HeaderXContentTypeOptions             Header = "X-Content-Type-Options"
+	HeaderXDownloadOptions                Header = "X-Download-Options"
+	HeaderXFrameOptions                   Header = "X-Frame-Options"
+	HeaderXPoweredBy                      Header = "X-Powered-By"
+	HeaderXXSSProtection                  Header = "X-XSS-Protection"
+	HeaderLastEventID                     Header = "Last-Event-ID"
+	HeaderNEL                             Header = "NEL"
+	HeaderPingFrom                        Header = "Ping-From"
+	HeaderPingTo                          Header = "Ping-To"
+	HeaderReportTo                        Header = "Report-To"
+	HeaderTE                              Header = "TE"
+	HeaderTrailer                         Header = "Trailer"
+	HeaderTransferEncoding                Header = "Transfer-Encoding"
+	HeaderSecWebSocketAccept              Header = "Sec-WebSocket-Accept"
+	HeaderSecWebSocketExtensions          Header = "Sec-WebSocket-Extensions"
+	HeaderSecWebSocketKey                 Header = "Sec-WebSocket-Key"
+	HeaderSecWebSocketProtocol            Header = "Sec-WebSocket-Protocol"
+	HeaderSecWebSocketVersion             Header = "Sec-WebSocket-Version"
+	HeaderAcceptPatch                     Header = "Accept-Patch"
+	HeaderAcceptPushPolicy                Header = "Accept-Push-Policy"
+	HeaderAcceptSignature                 Header = "Accept-Signature"
+	HeaderAltSvc                          Header = "Alt-Svc"
+	HeaderDate                            Header = "Date"
+	HeaderIndex                           Header = "Index"
+	HeaderLargeAllocation                 Header = "Large-Allocation"
+	HeaderLink                            Header = "Link"
+	HeaderPushPolicy                      Header = "Push-Policy"
+	HeaderRetryAfter                      Header = "Retry-After"
+	HeaderServerTiming                    Header = "Server-Timing"
+	HeaderSignature                       Header = "Signature"
+	HeaderSignedHeaders                   Header = "Signed-Headers"
+	HeaderSourceMap                       Header = "SourceMap"
+	HeaderUpgrade                         Header = "Upgrade"
+	HeaderXDNSPrefetchControl             Header = "X-DNS-Prefetch-Control"
+	HeaderXPingback                       Header = "X-Pingback"
+	HeaderXRequestID                      Header = "X-Request-ID"
+	HeaderXRequestedWith                  Header = "X-Requested-With"
+	HeaderXRobotsTag                      Header = "X-Robots-Tag"
+	HeaderXUACompatible                   Header = "X-UA-Compatible"
+)
