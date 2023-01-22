@@ -1,8 +1,9 @@
 package resolve
 
 type Controller struct {
-	path   string
-	routes map[string][]Route
+	path       string
+	routes     map[string][]Route
+	middleware []Handler
 }
 
 func NewController(path string) Controller {
@@ -12,15 +13,23 @@ func NewController(path string) Controller {
 	}
 }
 
+func (c *Controller) RegisterMiddlewares(middleware ...Handler) {
+	c.middleware = append(c.middleware, middleware...)
+}
+
 func (c *Controller) registerRoute(method, path string, handlers ...Handler) {
 	err := validatePath(path)
 	if err != false {
 		return
 	}
 
+	var handlersWithMiddleware []Handler
+	handlersWithMiddleware = append(handlersWithMiddleware, c.middleware...)
+	handlersWithMiddleware = append(handlersWithMiddleware, handlers...)
+
 	c.routes[method] = append(c.routes[method], Route{
 		Path:     path,
-		Handlers: handlers,
+		Handlers: handlersWithMiddleware,
 	})
 }
 

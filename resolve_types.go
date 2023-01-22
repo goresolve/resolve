@@ -1,7 +1,6 @@
 package resolve
 
 type Handler func(c *Ctx)
-type Middleware func(c *Ctx, next Handler)
 
 type Map map[string]interface{}
 
