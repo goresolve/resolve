@@ -11,6 +11,7 @@ type Engine struct {
 	router    *Router
 	templates map[string]Template
 
+	middlewares []Handler
 	controllers []Controller
 }
 
@@ -23,7 +24,9 @@ func Setup() *Engine {
 	}
 }
 
-func (a *Engine) RegisterTemplates(path, extension string, recursive bool) {
+func (e *Engine) RegisterTemplates(path, extension string, recursive bool) {
+	LogMessage("Initialization of html-templates has been started.")
+
 	files, err := os.ReadDir(path)
 	if err != nil {
 		ErrorMessage(fmt.Sprintf("Failed to load templates from %s", path), -1)
@@ -31,14 +34,19 @@ func (a *Engine) RegisterTemplates(path, extension string, recursive bool) {
 
 	for _, file := range files {
 		if file.IsDir() && recursive {
-			a.RegisterTemplates(path+"/"+file.Name(), extension, recursive)
+			e.RegisterTemplates(path+"/"+file.Name(), extension, recursive)
 		}
 
 		if file.Name()[len(file.Name())-len(extension):] == extension {
-			LogMessage(fmt.Sprintf("Loaded template: %s from %s", file.Name(), path))
-			a.templates[file.Name()] = NewTemplate(file.Name(), path+"/"+file.Name())
+			e.templates[file.Name()] = NewTemplate(file.Name(), path+"/"+file.Name())
 		}
 	}
+
+	LogMessage("Finished. Templates count: " + fmt.Sprint(len(e.templates)))
+}
+
+func (e *Engine) RegisterMiddlewares(middlewares ...Handler) {
+	e.middlewares = append(e.middlewares, middlewares...)
 }
 
 func (e *Engine) RegisterControllers(c ...Controller) {
@@ -54,7 +62,12 @@ func (e *Engine) RegisterControllers(c ...Controller) {
 
 				route.Path = c.path + route.Path
 				route.PathTokens = getPathTokens(route.Path)
-				e.router.registerRoute(method, route.Path, route.Handlers...)
+
+				var allHandlers []Handler
+				allHandlers = append(allHandlers, e.middlewares...)
+				allHandlers = append(allHandlers, route.Handlers...)
+
+				e.router.registerRoute(method, route.Path, allHandlers...)
 			}
 		}
 	}
